@@ -1,0 +1,59 @@
+services:
+  web:
+    build:
+      context: ./e_commerce
+    container_name: my_django_app1
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./e_commerce:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: luxe_react_frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # Prevents local node_modules from overriding container's
+    ports:
+      - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true # Ensures hot-reloading works on Windows Docker
+    depends_on:
+      - web
+
+  celery:
+    build:
+      context: ./e_commerce
+    container_name: my_celery_worker1
+    command: celery -A e_commerce worker -l info
+    volumes:
+      - ./e_commerce:/app
+    depends_on:
+      - redis
+      - db
+
+  redis:
+    image: redis:7
+    container_name: my_redis_server1
+    ports:
+      - "6379:6379"
+
+  db:
+    image: postgres:15
+    container_name: db1
+    environment:
+      POSTGRES_DB: ecom_db
+      POSTGRES_USER: namrta
+      POSTGRES_PASSWORD: newpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

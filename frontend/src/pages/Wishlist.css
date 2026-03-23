@@ -1,0 +1,56 @@
+.wishlist-page { padding-top: 108px; padding-bottom: 60px; min-height: 100vh; background: var(--bg); }
+.wishlist-header { margin-bottom: 28px; }
+.wishlist-header h1 { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 800; margin-bottom: 4px; }
+.wishlist-header p { color: var(--text-light); font-size: 14px; }
+
+.wishlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.wishlist-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border: 1px solid #f0f0f0;
+  transition: transform 0.25s, box-shadow 0.25s;
+  display: flex;
+  flex-direction: column;
+}
+.wishlist-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,0.1); }
+
+.wishlist-img-wrap {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #f5f5f6;
+  display: block;
+}
+.wishlist-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+.wishlist-card:hover .wishlist-img-wrap img { transform: scale(1.05); }
+.wishlist-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #ccc; }
+.wishlist-oos-badge {
+  position: absolute; top: 10px; left: 10px;
+  background: rgba(0,0,0,0.7); color: #fff;
+  font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px;
+}
+
+.wishlist-info { padding: 14px 16px 10px; flex: 1; }
+.wishlist-category { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #94969f; }
+.wishlist-name {
+  display: block; font-size: 14px; font-weight: 700; color: #282c3f;
+  text-decoration: none; margin: 4px 0 8px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.wishlist-name:hover { color: #ff3f6c; }
+.wishlist-price { font-size: 16px; font-weight: 900; color: #ff3f6c; }
+
+.wishlist-actions {
+  padding: 12px 16px;
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #f5f5f6;
+}
+.wishlist-actions .btn { flex: 1; justify-content: center; }
