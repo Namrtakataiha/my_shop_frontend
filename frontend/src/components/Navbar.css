@@ -94,6 +94,25 @@
 }
 .nav-search button:hover { background: #d4325a; }
 
+.nav-img-search-btn {
+  padding: 10px 12px !important;
+  background: #f5f5f6 !important;
+  color: #282c3f !important;
+  border-left: 1px solid #eaeaec !important;
+  border-radius: 0 !important;
+  transition: background 0.2s, color 0.2s;
+}
+.nav-img-search-btn:hover { background: #eaeaec !important; color: #ff3f6c !important; }
+.nav-img-search-btn.searching {
+  background: #fff0f3 !important;
+  color: #ff3f6c !important;
+  animation: img-search-pulse 1s ease-in-out infinite;
+}
+@keyframes img-search-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 /* ── Right nav links ── */
 .nav-links {
   display: flex;

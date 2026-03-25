@@ -7,7 +7,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from './Toast';
 import './ProductCard.css';
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, scoreBadge, scoreBadgeType }) {
   const { user } = useAuth();
   const { refreshCart } = useCart();
   const toast = useToast();
@@ -37,6 +37,11 @@ export default function ProductCard({ product }) {
 
   return (
     <Link to={`/products/${product.id}`} className="product-card">
+      {scoreBadge && (
+        <div className={`product-score-badge ${scoreBadgeType || 'exact'}`}>
+          {scoreBadge}
+        </div>
+      )}
       <div className="product-img-wrap">
         {product.image ? (
           <img src={product.image} alt={product.name} className="product-img" loading="lazy" />

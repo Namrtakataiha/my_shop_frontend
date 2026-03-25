@@ -32,7 +32,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(135deg, #282c3f 0%, #3d4166 100%);
+  background: linear-gradient(135deg, #38283f 0%, #663d55 100%);
   border-radius: 20px;
   padding: 32px 36px;
   margin-bottom: 24px;
@@ -197,6 +197,30 @@
 }
 .returns-count-pill.green { background: #03a685; }
 .returns-section-hint { font-size: 12px; color: #94969f; }
+
+/* ── Order group (request tab) ── */
+.returns-order-group {
+  margin-bottom: 20px;
+}
+.returns-order-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #282c3f;
+  margin-bottom: 10px;
+  padding: 8px 14px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #f0f0f0;
+}
+.returns-order-date {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 500;
+  color: #94969f;
+}
 
 /* ── Product list (request tab) ── */
 .returns-product-list {

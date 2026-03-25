@@ -1,44 +1,60 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  ShoppingBag, Truck, Shield, Headphones, ArrowRight,
-  Zap, TrendingUp, Gift, Star, RefreshCw, Tag
+  ShoppingBag, ArrowRight, ChevronLeft, ChevronRight,
+  Shield, Headphones, RotateCcw, Truck, TrendingUp, Sparkles
 } from 'lucide-react';
 import { getProducts, getCategories } from '../utils/api';
 import ProductCard from '../components/ProductCard';
 import './Home.css';
 
-const CAT_EMOJIS = { Men:'👔', Women:'👗', Kids:'🧒', Electronics:'📱', Home:'🏠', Beauty:'💄', Sports:'⚽', Accessories:'👜', default:'🛍️' };
+const SLIDES = [
+  {
+    eyebrow: 'New Season Arrivals',
+    title: "India's Favourite\nFashion Destination",
+    sub: 'Discover 50,000+ styles. Delivered fast, priced right.',
+    cta: 'Shop Now', link: '/products',
+    c1: '#ff3f6c', c2: '#ff905a', bg: '#1a0010', badge: '70% OFF',
+  },
+  {
+    eyebrow: 'Tech Deals',
+    title: "Top Electronics\nAt Best Prices",
+    sub: 'Smartphones, laptops, gadgets — all at unbeatable deals.',
+    cta: 'Explore Deals', link: '/products',
+    c1: '#4facfe', c2: '#00f2fe', bg: '#00101a', badge: 'NEW',
+  },
+  {
+    eyebrow: 'Trending Now',
+    title: "Style That\nTurns Heads",
+    sub: "Curated picks from top designers. Fresh drops every week.",
+    cta: 'Shop Trending', link: '/products',
+    c1: '#a855f7', c2: '#ec4899', bg: '#0d0010', badge: 'HOT',
+  },
+];
 
-function DealTimer() {
-  const [time, setTime] = useState({ h: 5, m: 42, s: 17 });
-  useEffect(() => {
-    const t = setInterval(() => {
-      setTime(p => {
-        let { h, m, s } = p;
-        s--; if (s < 0) { s = 59; m--; } if (m < 0) { m = 59; h--; } if (h < 0) { h = 23; }
-        return { h, m, s };
-      });
-    }, 1000);
-    return () => clearInterval(t);
-  }, []);
-  const pad = n => String(n).padStart(2, '0');
-  return (
-    <div className="deal-timer">
-      <div className="timer-box"><strong>{pad(time.h)}</strong><span>Hrs</span></div>
-      <span className="timer-sep">:</span>
-      <div className="timer-box"><strong>{pad(time.m)}</strong><span>Min</span></div>
-      <span className="timer-sep">:</span>
-      <div className="timer-box"><strong>{pad(time.s)}</strong><span>Sec</span></div>
-    </div>
-  );
-}
+const FEATURES = [
+  { icon: <Truck size={20}/>,      bg: '#fff0f3', color: '#ff3f6c', title: 'Free Delivery',  sub: 'Orders above ₹499' },
+  { icon: <Shield size={20}/>,     bg: '#e6f9f5', color: '#03a685', title: 'Secure Payment', sub: '100% safe & encrypted' },
+  { icon: <Headphones size={20}/>, bg: '#eef2ff', color: '#5c6bc0', title: '24/7 Support',   sub: 'Always here to help' },
+  { icon: <RotateCcw size={20}/>,  bg: '#fff4ec', color: '#ff905a', title: 'Easy Returns',   sub: '7-day hassle-free' },
+];
+
+const TRENDING = [
+  { emoji: '👟', label: 'Sneakers',    off: '40% OFF', bg: '#fff0f3', color: '#ff3f6c' },
+  { emoji: '👜', label: 'Handbags',    off: '35% OFF', bg: '#f0f4ff', color: '#5c6bc0' },
+  { emoji: '⌚', label: 'Watches',     off: '50% OFF', bg: '#e6f9f5', color: '#03a685' },
+  { emoji: '🕶️', label: 'Sunglasses', off: '30% OFF', bg: '#fff4ec', color: '#ff905a' },
+];
 
 export default function Home() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts]     = useState([]);
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]       = useState(true);
+  const [slide, setSlide]           = useState(0);
+  const [email, setEmail]           = useState('');
+  const [subbed, setSubbed]         = useState(false);
   const navigate = useNavigate();
+  const timerRef = useRef(null);
 
   useEffect(() => {
     Promise.all([getProducts(), getCategories()])
@@ -47,129 +63,105 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
-  const features = [
-    { icon: '🚚', color: '#fff0f3', title: 'Free Delivery', desc: 'On orders above ₹499' },
-    { icon: '🔒', color: '#f0fff8', title: 'Secure Payment', desc: '100% safe & encrypted' },
-    { icon: '🎧', color: '#f0f4ff', title: '24/7 Support',   desc: 'Always here to help' },
-    { icon: '↩️', color: '#fffbf0', title: 'Easy Returns',   desc: '7-day hassle-free returns' },
-  ];
+  const startTimer = () => {
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setSlide(s => (s + 1) % SLIDES.length), 5000);
+  };
+  useEffect(() => { startTimer(); return () => clearInterval(timerRef.current); }, []);
+
+  const goTo = i => { setSlide(i); startTimer(); };
+  const sl = SLIDES[slide];
 
   return (
-    <div className="home">
+    <div className="hm">
 
       {/* ── HERO ── */}
-      <section className="hero">
-        <div className="container hero-content">
-          <div className="hero-text animate-left">
-            <div className="hero-eyebrow"><Zap size={12}/> New Arrivals Every Day</div>
-            <h1>India's Favourite<br/><span className="hero-highlight">Fashion & Lifestyle</span><br/>Destination</h1>
-            <p>Discover 50,000+ products from top brands. Unbeatable prices, lightning-fast delivery.</p>
-            <div className="hero-btns">
-              <button onClick={() => navigate('/products')} className="btn btn-primary btn-lg">
-                Shop Now <ArrowRight size={17}/>
+      <section className="hm-hero" style={{ background: sl.bg }}>
+        <div className="hm-orb hm-orb1" style={{ background: `radial-gradient(circle,${sl.c1}44 0%,transparent 70%)` }}/>
+        <div className="hm-orb hm-orb2" style={{ background: `radial-gradient(circle,${sl.c2}33 0%,transparent 70%)` }}/>
+
+        <div className="container hm-hero-wrap" key={`s${slide}`}>
+          <div className="hm-hero-left">
+            <span className="hm-eyebrow" style={{ color: sl.c1, borderColor: `${sl.c1}55`, background: `${sl.c1}12` }}>
+              {sl.eyebrow}
+            </span>
+            <h1 className="hm-h1">
+              {sl.title.split('\n').map((line, i) => (
+                <span key={i}>
+                  {i === 0 ? line : (
+                    <><br/><span style={{ background: `linear-gradient(90deg,${sl.c1},${sl.c2})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{line}</span></>
+                  )}
+                </span>
+              ))}
+            </h1>
+            <p className="hm-sub">{sl.sub}</p>
+            <div className="hm-hero-btns">
+              <button className="hm-btn-fill" style={{ background: `linear-gradient(90deg,${sl.c1},${sl.c2})` }} onClick={() => navigate(sl.link)}>
+                {sl.cta} <ArrowRight size={15}/>
               </button>
-              <button onClick={() => navigate('/register')} className="btn btn-white btn-lg">
-                Join Free
-              </button>
+              <button className="hm-btn-ghost" onClick={() => navigate('/products')}>Browse All</button>
             </div>
-            <div className="hero-stats">
-              <div className="h-stat"><strong>50K+</strong><span>Products</span></div>
-              <div className="h-divider"/>
-              <div className="h-stat"><strong>10K+</strong><span>Customers</span></div>
-              <div className="h-divider"/>
-              <div className="h-stat"><strong>4.8★</strong><span>Rating</span></div>
+            <div className="hm-stats">
+              <div className="hm-stat"><strong>50K+</strong><span>Products</span></div>
+              <div className="hm-stat-sep"/>
+              <div className="hm-stat"><strong>10K+</strong><span>Customers</span></div>
+              <div className="hm-stat-sep"/>
+              <div className="hm-stat"><strong>4.8★</strong><span>Rating</span></div>
             </div>
           </div>
 
-          <div className="hero-visual animate-right">
-            <div className="hero-img-wrap">
-              <div className="hero-circle-bg animate-float"/>
-              <div className="hero-center-icon"><ShoppingBag size={100}/></div>
-              <div className="hero-float-card fc1">
-                <div className="fc-icon" style={{background:'rgba(255,63,108,0.2)'}}>🔥</div>
-                <div><div style={{fontSize:11,opacity:0.7}}>Today's Deal</div><div>Up to 70% OFF</div></div>
-              </div>
-              <div className="hero-float-card fc2">
-                <div className="fc-icon" style={{background:'rgba(255,144,90,0.2)'}}>⚡</div>
-                <div><div style={{fontSize:11,opacity:0.7}}>Flash Sale</div><div>Ends in 5h</div></div>
-              </div>
-              <div className="hero-float-card fc3">
-                <div className="fc-icon" style={{background:'rgba(56,128,255,0.2)'}}>🚚</div>
-                <div><div style={{fontSize:11,opacity:0.7}}>Free Delivery</div><div>Above ₹499</div></div>
-              </div>
+          <div className="hm-hero-right">
+            <div className="hm-circle" style={{ borderColor: `${sl.c1}33` }}>
+              <div className="hm-ring" style={{ borderColor: `${sl.c1}22` }}/>
+              <div className="hm-ring hm-ring2" style={{ borderColor: `${sl.c2}18` }}/>
+              <ShoppingBag size={90} style={{ color: `${sl.c1}66`, position: 'relative', zIndex: 1 }}/>
+              <div className="hm-badge" style={{ background: `linear-gradient(90deg,${sl.c1},${sl.c2})` }}>{sl.badge}</div>
             </div>
           </div>
         </div>
+
+        <button className="hm-nav hm-nav-l" onClick={() => goTo((slide - 1 + SLIDES.length) % SLIDES.length)}><ChevronLeft size={16}/></button>
+        <button className="hm-nav hm-nav-r" onClick={() => goTo((slide + 1) % SLIDES.length)}><ChevronRight size={16}/></button>
+        <div className="hm-dots">
+          {SLIDES.map((_, i) => (
+            <button key={i} className={`hm-dot${i === slide ? ' on' : ''}`}
+              style={i === slide ? { background: sl.c1, width: 22 } : {}}
+              onClick={() => goTo(i)}
+            />
+          ))}
+        </div>
       </section>
 
-      {/* ── FEATURES STRIP ── */}
-      <div className="features-strip">
-        <div className="features-strip-inner">
-          {features.map((f, i) => (
-            <div key={i} className="feat-item animate-fade" style={{animationDelay:`${i*0.08}s`}}>
-              <div className="feat-icon" style={{background:f.color}}>{f.icon}</div>
-              <div><h4>{f.title}</h4><p>{f.desc}</p></div>
+      {/* ── FEATURES BAR ── */}
+      <div className="hm-feats">
+        <div className="container hm-feats-grid">
+          {FEATURES.map((f, i) => (
+            <div key={i} className="hm-feat">
+              <div className="hm-feat-ico" style={{ background: f.bg, color: f.color }}>{f.icon}</div>
+              <div>
+                <div className="hm-feat-title">{f.title}</div>
+                <div className="hm-feat-sub">{f.sub}</div>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── PROMO BANNERS ── */}
-      <section className="section" style={{background:'#fff', paddingBottom:0}}>
-        <div className="container">
-          <div className="promo-grid">
-            <Link to="/products?category_name=Women" className="promo-card promo-1">
-              <div className="promo-bg"/>
-              <span className="promo-tag">NEW</span>
-              <div className="promo-card-content">
-                <h3>Women's Fashion</h3>
-                <p>Trending styles this season</p>
-              </div>
-            </Link>
-            <Link to="/products?category_name=Electronics" className="promo-card promo-2">
-              <div className="promo-bg"/>
-              <span className="promo-tag">HOT</span>
-              <div className="promo-card-content">
-                <h3>Electronics</h3>
-                <p>Latest gadgets & tech</p>
-              </div>
-            </Link>
-            <Link to="/products?category_name=Sports" className="promo-card promo-3">
-              <div className="promo-bg"/>
-              <span className="promo-tag">SALE</span>
-              <div className="promo-card-content">
-                <h3>Sports & Fitness</h3>
-                <p>Gear up for greatness</p>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* ── CATEGORIES ── */}
       {categories.length > 0 && (
-        <section className="section" style={{background:'#fff'}}>
+        <section className="hm-sec hm-white">
           <div className="container">
-            <div className="sec-header">
-              <div className="sec-header-left">
-                <div className="sec-line"/>
-                <h2>Shop by Category</h2>
-                <p>Find exactly what you're looking for</p>
-              </div>
-              <Link to="/products" className="btn btn-ghost btn-sm">View All <ArrowRight size={14}/></Link>
+            <div className="hm-sec-head">
+              <div><div className="hm-bar"/><h2>Shop by Category</h2><p>Find exactly what you're looking for</p></div>
+              <Link to="/products" className="hm-more">View All <ArrowRight size={13}/></Link>
             </div>
-            <div className="cats-scroll">
-              {categories.map((cat, i) => (
-                <Link
-                  key={cat.id}
-                  to={`/products?category_name=${encodeURIComponent(cat.name)}`}
-                  className="cat-pill animate-fade"
-                  style={{animationDelay:`${i*0.06}s`}}
-                >
-                  <div className="cat-pill-icon">
-                    {CAT_EMOJIS[cat.name] || CAT_EMOJIS.default}
+            <div className="hm-cats">
+              {categories.map(cat => (
+                <Link key={cat.id} to={`/products?category_name=${encodeURIComponent(cat.name)}`} className="hm-cat">
+                  <div className="hm-cat-circle">
+                    <span className="hm-cat-letter">{cat.name.charAt(0)}</span>
                   </div>
-                  <span className="cat-pill-name">{cat.name}</span>
+                  <span className="hm-cat-name">{cat.name}</span>
                 </Link>
               ))}
             </div>
@@ -177,111 +169,128 @@ export default function Home() {
         </section>
       )}
 
-      {/* ── DEAL TIMER + PRODUCTS ── */}
-      <section className="section">
+      {/* ── FEATURED PRODUCTS ── */}
+      <section className="hm-sec hm-gray">
         <div className="container">
-          <div className="deal-banner animate-fade">
-            <div className="deal-banner-left">
-              <h3>⚡ Flash Sale — Deals of the Day</h3>
-              <p>Grab them before they're gone!</p>
-            </div>
-            <DealTimer/>
+          <div className="hm-sec-head">
+            <div><div className="hm-bar"/><h2>Featured Products</h2><p>Handpicked deals just for you</p></div>
+            <Link to="/products" className="hm-more">View All <ArrowRight size={13}/></Link>
           </div>
-
           {loading ? (
             <div className="grid-4">
-              {[...Array(8)].map((_,i) => (
-                <div key={i} className="card" style={{padding:16}}>
-                  <div className="skeleton" style={{height:220,marginBottom:12}}/>
-                  <div className="skeleton" style={{height:14,marginBottom:8}}/>
-                  <div className="skeleton" style={{height:12,width:'60%'}}/>
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="card" style={{ padding: 16 }}>
+                  <div className="skeleton" style={{ height: 200, marginBottom: 12 }}/>
+                  <div className="skeleton" style={{ height: 14, marginBottom: 8 }}/>
+                  <div className="skeleton" style={{ height: 12, width: '60%' }}/>
                 </div>
               ))}
+            </div>
+          ) : products.length > 0 ? (
+            <div className="grid-4">
+              {products.map(p => <ProductCard key={p.id} product={p}/>)}
             </div>
           ) : (
-            <div className="grid-4">
-              {products.map((p, i) => (
-                <div key={p.id} className="animate-fade" style={{animationDelay:`${i*0.05}s`}}>
-                  <ProductCard product={p}/>
-                </div>
-              ))}
-            </div>
+            <div className="empty-state"><ShoppingBag size={48}/><h3>No products yet</h3><p>Check back soon.</p></div>
           )}
+        </div>
+      </section>
 
-          <div style={{textAlign:'center', marginTop:36}}>
-            <Link to="/products" className="btn btn-outline btn-lg">
-              View All Products <ArrowRight size={17}/>
+      {/* ── TRENDING ── */}
+      <section className="hm-trending">
+        <div className="container hm-trending-wrap">
+          <div className="hm-trending-left">
+            <div className="hm-trend-badge"><TrendingUp size={13}/> Trending Now</div>
+            <h2>What's Hot<br/>This <span>Season</span></h2>
+            <p>Handpicked by our style experts. Updated every week with the freshest picks.</p>
+            <Link to="/products" className="hm-btn-fill" style={{ background: 'linear-gradient(90deg,#ff3f6c,#ff905a)', textDecoration: 'none' }}>
+              <Sparkles size={14}/> Explore Trending
             </Link>
+          </div>
+          <div className="hm-trend-cards">
+            {TRENDING.map((item, i) => (
+              <Link key={i} to="/products" className="hm-trend-card" style={{ background: item.bg }}>
+                <span className="hm-trend-emoji">{item.emoji}</span>
+                <span className="hm-trend-label">{item.label}</span>
+                <span className="hm-trend-off" style={{ color: item.color }}>{item.off}</span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ── SELL CTA ── */}
-      <section className="cta-section">
-        <div className="container cta-inner">
-          <div className="cta-text animate-left">
-            <h2>Start Selling on<br/><span style={{color:'#ff3f6c'}}>MyShop</span> Today</h2>
+      <section className="hm-cta">
+        <div className="container hm-cta-wrap">
+          <div className="hm-cta-left">
+            <span className="hm-eyebrow" style={{ color: '#ff3f6c', borderColor: '#ff3f6c55', background: '#ff3f6c12' }}>
+              <Sparkles size={11}/> For Sellers
+            </span>
+            <h2>Start Selling on <em>MyShop</em> Today</h2>
             <p>Join thousands of sellers reaching millions of customers. Easy setup, powerful analytics, and instant payouts.</p>
-            <div style={{display:'flex', gap:12, flexWrap:'wrap'}}>
-              <Link to="/register" className="btn btn-primary btn-lg">Become a Seller <ArrowRight size={17}/></Link>
-              <Link to="/products" className="btn btn-ghost btn-lg" style={{color:'#fff', borderColor:'rgba(255,255,255,0.3)'}}>Browse Products</Link>
+            <div className="hm-cta-btns">
+              <Link to="/register" className="hm-btn-fill" style={{ background: 'linear-gradient(90deg,#ff3f6c,#ff905a)' }}>
+                Become a Seller <ArrowRight size={15}/>
+              </Link>
+              <Link to="/products" className="hm-btn-ghost-light">Browse Products</Link>
             </div>
           </div>
-          <div className="cta-visual animate-right">
-            <div className="cta-cards">
-              {[
-                {icon:'📦', label:'Easy Listing'},
-                {icon:'💰', label:'Fast Payouts'},
-                {icon:'📊', label:'Analytics'},
-                {icon:'🚀', label:'Grow Fast'},
-              ].map((c,i) => (
-                <div key={i} className="cta-mini-card animate-fade" style={{animationDelay:`${i*0.1}s`}}>
-                  <div className="cmc-icon">{c.icon}</div>
-                  <span>{c.label}</span>
-                </div>
-              ))}
-            </div>
+          <div className="hm-cta-tiles">
+            {[['📦','Easy Listing'],['💰','Fast Payouts'],['📊','Analytics'],['🚀','Grow Fast']].map(([ico, lbl], i) => (
+              <div key={i} className="hm-cta-tile"><span>{ico}</span><span>{lbl}</span></div>
+            ))}
           </div>
         </div>
       </section>
 
+      {/* ── NEWSLETTER ── */}
+      <section className="hm-nl">
+        <div className="container hm-nl-wrap">
+          <h2>Get Exclusive Deals in Your Inbox</h2>
+          <p>Subscribe and be the first to know about flash sales, new arrivals, and special offers.</p>
+          {subbed ? (
+            <div className="hm-nl-ok">🎉 You're subscribed! Check your inbox for a welcome gift.</div>
+          ) : (
+            <form className="hm-nl-form" onSubmit={e => { e.preventDefault(); if (email) setSubbed(true); }}>
+              <input type="email" placeholder="Enter your email address" value={email} onChange={e => setEmail(e.target.value)} required/>
+              <button type="submit" className="hm-btn-fill" style={{ background: '#ff3f6c', flexShrink: 0 }}>
+                Subscribe <ArrowRight size={14}/>
+              </button>
+            </form>
+          )}
+          <span className="hm-nl-note">No spam. Unsubscribe anytime.</span>
+        </div>
+      </section>
+
       {/* ── FOOTER ── */}
-      <footer className="footer">
+      <footer className="hm-footer">
         <div className="container">
-          <div className="footer-grid">
-            <div className="footer-brand">
-              <div style={{display:'flex',alignItems:'center',gap:8}}>
-                <div className="logo-icon"><ShoppingBag size={16}/></div>
-                <span style={{fontSize:20,fontWeight:900,color:'#fff'}}>My<span style={{color:'#ff3f6c'}}>Shop</span></span>
-              </div>
+          <div className="hm-footer-grid">
+            <div className="hm-footer-brand">
+              <div className="hm-footer-logo"><ShoppingBag size={15}/><span>My<em>Shop</em></span></div>
               <p>India's favourite online shopping destination for fashion, electronics, and lifestyle products.</p>
+              <div className="hm-footer-socials">
+                {['📘','📸','🐦','▶️'].map((s, i) => <a key={i} href="#">{s}</a>)}
+              </div>
             </div>
-            <div className="footer-col">
+            <div className="hm-footer-col">
               <h4>Company</h4>
-              <Link to="/">About Us</Link>
-              <Link to="/">Careers</Link>
-              <Link to="/">Press</Link>
-              <Link to="/">Blog</Link>
+              <Link to="/">About Us</Link><Link to="/">Careers</Link><Link to="/">Blog</Link>
             </div>
-            <div className="footer-col">
+            <div className="hm-footer-col">
               <h4>Help</h4>
-              <Link to="/">FAQ</Link>
-              <Link to="/">Shipping</Link>
-              <Link to="/">Returns</Link>
-              <Link to="/">Track Order</Link>
+              <Link to="/">FAQ</Link><Link to="/">Shipping</Link>
+              <Link to="/returns">Returns</Link><Link to="/orders">Track Order</Link>
             </div>
-            <div className="footer-col">
+            <div className="hm-footer-col">
               <h4>Contact</h4>
-              <span>help@myshop.com</span>
-              <span>+91 98765 43210</span>
-              <span>Mon–Sat, 9am–6pm</span>
+              <span>help@myshop.com</span><span>+91 98765 43210</span><span>Mon–Sat, 9am–6pm</span>
             </div>
           </div>
-          <div className="footer-bottom">
+          <div className="hm-footer-bottom">
             <span>© 2025 MyShop. All rights reserved.</span>
-            <div className="footer-badges">
-              <span className="footer-badge">🔒 SSL Secured</span>
-              <span className="footer-badge">✅ Verified Seller</span>
+            <div className="hm-footer-tags">
+              <span>🔒 SSL Secured</span><span>✅ Verified Seller</span><span>🇮🇳 Made in India</span>
             </div>
           </div>
         </div>

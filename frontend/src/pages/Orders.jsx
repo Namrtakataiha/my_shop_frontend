@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Clock, Truck, CheckCircle, XCircle, ShoppingBag, ChevronDown, ChevronUp, Star, RotateCcw } from 'lucide-react';
-import { getMyOrders } from '../utils/api';
+import { Package, Clock, Truck, CheckCircle, XCircle, ShoppingBag, ChevronDown, ChevronUp, Star, RotateCcw, AlertTriangle } from 'lucide-react';
+import { getMyOrders, cancelOrder } from '../utils/api';
+import { useToast } from '../components/Toast';
 import './Orders.css';
 
 const STATUS = {
@@ -13,17 +14,65 @@ const STATUS = {
 };
 const STEPS = ['pending', 'processing', 'shipped', 'delivered'];
 
+function CancelModal({ order, onConfirm, onClose, loading }) {
+  return (
+    <div className="cancel-modal-overlay" onClick={onClose}>
+      <div className="cancel-modal" onClick={e => e.stopPropagation()}>
+        <div className="cancel-modal-icon">
+          <AlertTriangle size={32} />
+        </div>
+        <h3>Cancel Order?</h3>
+        <p>You're about to cancel order <strong>#{order.order_number}</strong>.</p>
+        <p className="cancel-modal-sub">This action cannot be undone. Your items will be restocked.</p>
+        <div className="cancel-modal-order-info">
+          <span>Order Total</span>
+          <strong>₹{parseFloat(order.total_amount).toLocaleString('en-IN')}</strong>
+        </div>
+        <div className="cancel-modal-actions">
+          <button className="btn btn-ghost btn-full" onClick={onClose} disabled={loading}>
+            Keep Order
+          </button>
+          <button className="btn btn-danger btn-full" onClick={onConfirm} disabled={loading}>
+            {loading ? <span className="spinner spinner-sm" /> : <><XCircle size={15} /> Yes, Cancel</>}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState({});
+  const [cancelTarget, setCancelTarget] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
+  const toast = useToast();
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true);
     getMyOrders()
       .then(r => setOrders(Array.isArray(r.data) ? r.data : []))
       .catch(() => setOrders([]))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleConfirmCancel = async () => {
+    if (!cancelTarget) return;
+    setCancelling(true);
+    try {
+      const { data } = await cancelOrder(cancelTarget.id);
+      toast(data.message || 'Order cancelled successfully', 'success');
+      setCancelTarget(null);
+      load();
+    } catch (err) {
+      toast(err.response?.data?.error || 'Failed to cancel order', 'error');
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   const toggle = (id) => setExpanded(p => ({ ...p, [id]: !p[id] }));
 
@@ -59,13 +108,11 @@ export default function Orders() {
               const isCancelled = statusKey === 'cancelled';
               const isOpen = expanded[order.order_number];
               const items = order.items || [];
+              const canCancel = statusKey === 'pending' || statusKey === 'processing';
 
               return (
-                <div
-                  key={order.order_number}
-                  className="order-card animate-fade"
-                  style={{ animationDelay: `${i * 0.07}s` }}
-                >
+                <div key={order.order_number} className="order-card animate-fade" style={{ animationDelay: `${i * 0.07}s` }}>
+
                   {/* ── Header ── */}
                   <div className="order-card-header">
                     <div className="order-meta">
@@ -87,6 +134,15 @@ export default function Orders() {
                     <div className="order-amount-inline">
                       ₹{parseFloat(order.total_amount).toLocaleString('en-IN')}
                     </div>
+
+                    {canCancel && (
+                      <button
+                        className="btn btn-sm order-cancel-btn"
+                        onClick={() => setCancelTarget(order)}
+                      >
+                        <XCircle size={13} /> Cancel Order
+                      </button>
+                    )}
 
                     <button className="order-toggle-btn" onClick={() => toggle(order.order_number)}>
                       {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -123,13 +179,11 @@ export default function Orders() {
                   {/* ── Expandable details ── */}
                   {isOpen && (
                     <div className="order-details animate-fade">
-                      {/* Product items */}
                       {items.length > 0 && (
                         <div className="order-items-section">
                           <div className="order-items-label">Items Ordered</div>
                           {items.map(item => (
                             <div key={item.id} className="order-item-row">
-                              {/* Product image or placeholder */}
                               <div className="order-item-img">
                                 {item.product_image
                                   ? <img src={item.product_image} alt={item.product_name} />
@@ -138,28 +192,17 @@ export default function Orders() {
                               </div>
                               <div className="order-item-info">
                                 <div className="order-item-name">{item.product_name}</div>
-                                <div className="order-item-meta">
-                                  Qty: {item.quantity} × ₹{parseFloat(item.price).toLocaleString('en-IN')}
-                                </div>
+                                <div className="order-item-meta">Qty: {item.quantity} × ₹{parseFloat(item.price).toLocaleString('en-IN')}</div>
                               </div>
                               <div className="order-item-total">
                                 ₹{(parseFloat(item.price) * item.quantity).toLocaleString('en-IN')}
                               </div>
-                              {/* Review link — only for delivered orders */}
                               {statusKey === 'delivered' && item.product_id && (
                                 <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                                  <Link
-                                    to={`/products/${item.product_id}?tab=reviews`}
-                                    className="btn btn-sm btn-outline"
-                                    style={{ whiteSpace: 'nowrap', fontSize: 11 }}
-                                  >
+                                  <Link to={`/products/${item.product_id}?tab=reviews`} className="btn btn-sm btn-outline" style={{ fontSize: 11 }}>
                                     <Star size={11} /> Review
                                   </Link>
-                                  <Link
-                                    to={`/returns?product_id=${item.product_id}`}
-                                    className="btn btn-sm"
-                                    style={{ whiteSpace: 'nowrap', fontSize: 11, background: '#fff0f3', color: '#ff3f6c', border: '1px solid #ffccd8', borderRadius: 6 }}
-                                  >
+                                  <Link to={`/returns?product_id=${item.product_id}`} className="btn btn-sm" style={{ fontSize: 11, background: '#fff0f3', color: '#ff3f6c', border: '1px solid #ffccd8', borderRadius: 6 }}>
                                     <RotateCcw size={11} /> Return
                                   </Link>
                                 </div>
@@ -169,18 +212,17 @@ export default function Orders() {
                         </div>
                       )}
 
-                      {/* Order meta */}
                       <div className="order-detail-rows">
                         <div className="order-detail-row">
                           <span>Shipping Address</span>
                           <strong>{order.shipping_address || '—'}</strong>
                         </div>
                         <div className="order-detail-row">
-                          <span>Payment</span>
+                          <span>Payment Method</span>
                           <strong>Cash on Delivery</strong>
                         </div>
                         <div className="order-detail-row total-row">
-                          <span>Total</span>
+                          <span>Order Total</span>
                           <strong>₹{parseFloat(order.total_amount).toLocaleString('en-IN')}</strong>
                         </div>
                       </div>
@@ -192,6 +234,16 @@ export default function Orders() {
           </div>
         )}
       </div>
+
+      {/* ── Cancel Confirmation Modal ── */}
+      {cancelTarget && (
+        <CancelModal
+          order={cancelTarget}
+          onConfirm={handleConfirmCancel}
+          onClose={() => !cancelling && setCancelTarget(null)}
+          loading={cancelling}
+        />
+      )}
     </div>
   );
 }

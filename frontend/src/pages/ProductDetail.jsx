@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../components/Toast';
 import ProductCard from '../components/ProductCard';
+import ImageViewer from '../components/ImageViewer';
 import './ProductDetail.css';
 
 export default function ProductDetail() {
@@ -190,7 +191,11 @@ export default function ProductDetail() {
           <div className="detail-img-section animate-left">
             <div className="detail-img-wrap">
               {product.image ? (
-                <img src={product.image} alt={product.name} />
+                <ImageViewer
+                  src={product.image}
+                  alt={product.name}
+                  style={{ width: '100%', height: '100%' }}
+                />
               ) : (
                 <div className="detail-img-placeholder"><Package size={80} /></div>
               )}
@@ -344,7 +349,22 @@ export default function ProductDetail() {
                         </div>
                       </div>
                     ) : (
-                      <p className="comment-text">{c.comment}</p>
+                      <>
+                        <p className="comment-text">{c.comment}</p>
+                        {c.sentiment && (() => {
+                          const S = {
+                            positive: { bg: '#e6f9f5', color: '#03a685', label: '😊 Positive' },
+                            negative: { bg: '#fff0f3', color: '#ff3f6c', label: '😞 Negative' },
+                            neutral:  { bg: '#f4f4f5', color: '#94969f', label: '😐 Neutral'  },
+                          };
+                          const s = S[c.sentiment] || S.neutral;
+                          return (
+                            <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 20, background: s.bg, color: s.color, marginTop: 4 }}>
+                              {s.label}
+                            </span>
+                          );
+                        })()}
+                      </>
                     )}
 
                     {/* Replies */}

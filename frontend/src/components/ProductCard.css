@@ -102,3 +102,14 @@
 }
 .add-cart-btn.added { background: #03a685; }
 .add-cart-btn.added:hover { background: #028a6e; }
+
+/* ── Similarity score badge (image search) ── */
+.product-score-badge {
+  position: absolute; top: 8px; left: 8px; z-index: 3;
+  font-size: 10px; font-weight: 700; padding: 3px 8px;
+  border-radius: 12px; letter-spacing: 0.3px;
+  pointer-events: none;
+}
+.product-score-badge.exact      { background: #03a685; color: #fff; }
+.product-score-badge.similar    { background: #5c6bc0; color: #fff; }
+.product-score-badge.suggestion { background: #ff905a; color: #fff; }

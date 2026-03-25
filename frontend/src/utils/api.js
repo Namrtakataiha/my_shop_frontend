@@ -62,6 +62,7 @@ export const clearCart = () => API.delete('/cart/clear/');
 // Orders
 export const checkout = (data) => API.post('/checkout/', data);
 export const getMyOrders = () => API.get('/my-orders/');
+export const cancelOrder = (id) => API.post(`/checkout/cancel/${id}/`);
 export const getAdminOrders = () => API.get('/admin/my-orders/');
 export const updateOrderStatus = (id, data) => API.put(`/admin/order/${id}/status/`, data);
 export const updatePaymentStatus = (id) => API.put(`/payment/status/${id}/`);
@@ -86,12 +87,15 @@ export const addToWishlist = (product_id) => API.post('/wishlist/', { product_id
 export const removeFromWishlist = (product_id) => API.delete('/wishlist/', { data: { product_id } });
 
 // Return Requests
-export const createReturnRequest = (productId, data) => API.post(`/create_return_request/${productId}/`, data);
-export const getMyReturns = () => API.get('/my_return_requests/');
-export const getAdminReturns = () => API.get('/view_all_return_requests/');
-export const approveOrRejectReturn = (id, data) => API.put(`/approve_or_reject_return/${id}/`, data);
-export const processRefund = (id) => API.put(`/admin/return-requests/${id}/refund/`);
-export const getEligibleReturnProducts = (orderId) => API.get(`/eligible_return_products/${orderId}/`);
+export const createReturnRequest = (data) => API.post('/create_return_request/', data);
+export const getMyReturns = () => API.get('/user_view_return_requests/');
+export const trackReturnStatus = (id) => API.get(`/track_return_status/${id}/`);
+export const updatePickupDate = (id, data) => API.patch(`/update_pickup_date/${id}/`, data);
+export const requestRefund = (id) => API.patch(`/request_refund/${id}/`);
+export const getAdminReturns = () => API.get('/admin_view_return_requests/');
+export const approveReturnRequest = (id, data) => API.patch(`/approve_return_request/${id}/`, data);
+export const processPickup = (id) => API.patch(`/process_pickup/${id}/`);
+export const processRefund = (id) => API.patch(`/process_refund/${id}/`);
 
 // Ratings
 export const addRating = (data) => API.post('/product-rating/', data);
@@ -104,5 +108,8 @@ export const updateProfile = (data) => API.put('/profile/', data);
 // Recommendations & ML
 export const getRecommendations = (productId) => API.get(`/product/${productId}/recommendations/`);
 export const predictPrice = (data) => API.post('/predict-price/', data);
+export const imageSearch = (formData) => API.post('/image-search/', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
 
 export default API;

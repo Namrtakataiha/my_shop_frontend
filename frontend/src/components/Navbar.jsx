@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import {
   ShoppingCart, LogOut, Menu, X, Search,
-  Package, LayoutDashboard, ShoppingBag, Tag, Users, ChevronDown, User, Settings, Heart, RotateCcw
+  Package, LayoutDashboard, ShoppingBag, Tag, Users, ChevronDown, User, Settings, Heart, RotateCcw, Camera
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { imageSearch } from '../utils/api';
+import { useToast } from './Toast';
 import './Navbar.css';
 
 const categories = ['Men', 'Women', 'Kids', 'Electronics', 'Home', 'Beauty', 'Sports', 'Accessories'];
@@ -84,11 +86,14 @@ export default function Navbar() {
   const { cartCount } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
+  const toast = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [profileOpen, setProfileOpen] = useState(false);
+  const [imgSearching, setImgSearching] = useState(false);
   const profileBtnRef = useRef(null);
+  const imgInputRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -101,6 +106,53 @@ export default function Navbar() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) navigate(`/products?product_name=${encodeURIComponent(searchQuery.trim())}`);
+  };
+
+  const handleImageSearch = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate it's an image
+    if (!file.type.startsWith('image/')) {
+      toast('Please select an image file', 'warning');
+      e.target.value = '';
+      return;
+    }
+
+    setImgSearching(true);
+    toast('Searching by image...', 'info');
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const { data } = await imageSearch(fd);
+
+      if (data?.error) {
+        toast(data.error, 'error');
+        return;
+      }
+
+      // New shape: { exact: [], similar: [], suggestion: [] }
+      const total = (data.exact?.length || 0) + (data.similar?.length || 0) + (data.suggestion?.length || 0);
+
+      if (total === 0) {
+        toast('No similar products found', 'warning');
+        navigate('/products', { state: { imageResults: { exact: [], similar: [], suggestion: [] } } });
+        return;
+      }
+
+      const exactCount = data.exact?.length || 0;
+      const msg = exactCount > 0
+        ? `Found ${exactCount} exact match${exactCount > 1 ? 'es' : ''}!`
+        : `Found ${total} visually similar products`;
+      toast(msg, 'success');
+      navigate('/products', { state: { imageResults: data } });
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Image search failed. Make sure the backend is running.';
+      toast(msg, 'error');
+    } finally {
+      setImgSearching(false);
+      e.target.value = '';
+    }
   };
 
   const handleLogout = () => { logout(); navigate('/'); setProfileOpen(false); };
@@ -124,6 +176,22 @@ export default function Navbar() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <button type="submit"><Search size={16} /></button>
+          <button
+            type="button"
+            className={`nav-img-search-btn${imgSearching ? ' searching' : ''}`}
+            title="📷 Search by image (like Myntra visual search)"
+            onClick={() => imgInputRef.current?.click()}
+            disabled={imgSearching}
+          >
+            {imgSearching ? <span className="spinner spinner-sm" /> : <Camera size={16} />}
+          </button>
+          <input
+            ref={imgInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            style={{ display: 'none' }}
+            onChange={handleImageSearch}
+          />
         </form>
 
         {/* Desktop links */}

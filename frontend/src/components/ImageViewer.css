@@ -1,0 +1,120 @@
+/* ── Thumbnail wrapper ── */
+.iv-thumb {
+  position: relative;
+  cursor: zoom-in;
+  overflow: hidden;
+  border-radius: 12px;
+}
+.iv-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.3s ease;
+}
+.iv-thumb:hover img { transform: scale(1.03); }
+
+.iv-thumb-hint {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.iv-thumb:hover .iv-thumb-hint { opacity: 1; }
+
+/* ── Lightbox overlay ── */
+.iv-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: iv-fade 0.2s ease;
+}
+@keyframes iv-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Image stage ── */
+.iv-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+}
+.iv-img {
+  max-width: 90vw;
+  max-height: 88vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* ── Controls bar ── */
+.iv-controls {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 40px;
+  padding: 8px 16px;
+  z-index: 10000;
+}
+.iv-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+.iv-btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.1); }
+.iv-close { background: rgba(255,63,108,0.3); border-color: rgba(255,63,108,0.5); }
+.iv-close:hover { background: #ff3f6c; }
+.iv-scale {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  min-width: 44px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+/* ── Hint text ── */
+.iv-hint {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  pointer-events: none;
+  letter-spacing: 0.3px;
+}
