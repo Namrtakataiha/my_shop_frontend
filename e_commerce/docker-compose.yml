@@ -1,0 +1,43 @@
+services:
+  web:
+    build: .
+    container_name: my_django_app
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - db
+
+  celery:
+    build: .
+    container_name: my_celery_worker
+    command: celery -A e_commerce worker -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - db
+
+  redis:
+    image: redis:7
+    container_name: my_redis_server
+    ports:
+      - "6379:6379"
+
+  db:
+    image: postgres:15
+    container_name: db
+    environment:
+      POSTGRES_DB: ecom_db
+      POSTGRES_USER: namrta
+      POSTGRES_PASSWORD: newpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

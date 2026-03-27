@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+e_commerce/venv/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+media/
+
+# Environment variables
+.env
+.env.*
+*.env
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes
+postgres_data/
+
+# ML model cache (large files, downloaded automatically)
+e_commerce/.cache/
+*.pt
+*.bin
