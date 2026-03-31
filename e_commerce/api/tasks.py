@@ -155,7 +155,7 @@ def notify_reply_added(parent_comment_id, reply_id):
 
 @shared_task
 def notify_return_approved(return_request_id):
-    """Notify customer that return was approved + pickup date set."""
+ 
     try:
         rr = ReturnRequest.objects.select_related('user', 'product').get(id=return_request_id)
         pickup = rr.pickup_date.strftime('%d %b %Y, %I:%M %p') if rr.pickup_date else 'TBD'
@@ -178,7 +178,7 @@ def notify_return_approved(return_request_id):
 
 @shared_task
 def notify_return_completed(return_request_id):
-    """Notify both parties that return is completed and refund is processed."""
+
     try:
         rr = ReturnRequest.objects.select_related('user', 'product').get(id=return_request_id)
         logger.info(
